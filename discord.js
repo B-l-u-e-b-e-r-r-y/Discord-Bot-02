@@ -21,7 +21,7 @@ class Music {
 
     }
 
-    play(msg) {
+    async play(msg) {
 
         // 語音群的 ID
         const guildID = msg.guild.id;
@@ -35,31 +35,33 @@ class Music {
         // 處理字串，將 !!play 字串拿掉，只留下 YouTube 網址
         const musicURL = msg.content.replace(`${prefix}play`, '');
 
-        // 取得 YouTube 影片名稱
-        const self = this;
-        ytdl.getInfo(musicURL, (err, info) => {
+        try {
 
-            if (err) return;
+            // 取得 YouTube 影片資訊
+            const res = await ytdl.getInfo(musicURL);
+            const info = res.videoDetails;
 
             // 將歌曲資訊加入隊列
-            if (!self.queue[guildID]) {
-                self.queue[guildID] = [];
+            if (!this.queue[guildID]) {
+                this.queue[guildID] = [];
             }
 
-            self.queue[guildID].push({
+            this.queue[guildID].push({
                 name: info.title,
                 url: musicURL
             });
 
             // 如果目前正在播放歌曲就加入隊列，反之則播放歌曲
-            if (self.isPlaying) {
+            if (this.isPlaying) {
                 msg.channel.send(`歌曲加入隊列：${info.title}`);
             } else {
-                self.isPlaying = true;
-                self.playMusic(msg, guildID, self.queue[guildID][0]);
+                this.isPlaying = true;
+                this.playMusic(msg, guildID, this.queue[guildID][0]);
             }
 
-        });
+        } catch(e) {
+            console.log(e);
+        }
 
     }
 
@@ -169,7 +171,7 @@ client.on('message', async (msg) => {
         if (msg.member.voice.channel) {
 
             // 播放音樂
-            music.play(msg);
+            await music.play(msg);
         } else {
 
             // 如果使用者不在任何一個語音頻道
