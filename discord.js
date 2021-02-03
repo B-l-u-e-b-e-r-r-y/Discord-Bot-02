@@ -33,7 +33,7 @@ class Music {
         }
 
         // 處理字串，將 !!play 字串拿掉，只留下 YouTube 網址
-        const musicURL = msg.content.replace(`${prefix}play`, '');
+        const musicURL = msg.content.replace(`${prefix}play`, '').trim();
 
         try {
 
