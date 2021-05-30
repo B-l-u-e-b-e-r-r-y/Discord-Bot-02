@@ -8,7 +8,7 @@ const client = new Client();
 class Music {
 
     constructor() {
-        this.isPlaying = false;
+        this.isPlaying = {};
         this.queue = {};
         this.connection = {};
         this.dispatcher = {};
@@ -52,10 +52,10 @@ class Music {
             });
 
             // 如果目前正在播放歌曲就加入隊列，反之則播放歌曲
-            if (this.isPlaying) {
+            if (this.isPlaying[guildID]) {
                 msg.channel.send(`歌曲加入隊列：${info.title}`);
             } else {
-                this.isPlaying = true;
+                this.isPlaying[guildID] = true;
                 this.playMusic(msg, guildID, this.queue[guildID][0]);
             }
 
@@ -87,7 +87,7 @@ class Music {
             if (self.queue[guildID].length > 0) {
                 self.playMusic(msg, guildID, self.queue[guildID].shift());
             } else {
-                self.isPlaying = false;
+                self.isPlaying[guildID] = false;
                 msg.channel.send('目前沒有音樂了，請加入音樂 :D');
             }
 
