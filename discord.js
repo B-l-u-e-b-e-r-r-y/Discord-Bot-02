@@ -8,7 +8,7 @@ const client = new Client();
 class Music {
 
     constructor() {
-        this.isPlaying = false;
+        this.isPlaying = {};
         this.queue = {};
         this.connection = {};
         this.dispatcher = {};
@@ -16,8 +16,13 @@ class Music {
 
     async join(msg) {
 
-        // Bot 加入語音頻道
-        this.connection[msg.guild.id] = await msg.member.voice.channel.join();
+        // 如果使用者正在頻道中
+        if (msg.member.voice.channel !== null) {
+            // Bot 加入語音頻道
+            this.connection[msg.guild.id] = await msg.member.voice.channel.join();
+        } else {
+            msg.channel.send('請先進入語音頻道');
+        }
 
     }
 
@@ -28,7 +33,13 @@ class Music {
 
         // 如果 Bot 還沒加入該語音群的語音頻道
         if (!this.connection[guildID]) {
-            msg.channel.send('請先加入頻道');
+            msg.channel.send('請先將機器人 `!!join` 加入頻道');
+            return;
+        }
+
+        // 如果 Bot leave 後又未加入語音頻道
+        if (this.connection[guildID].status === 4) {
+            msg.channel.send('請先將機器人 `!!join` 重新加入頻道');
             return;
         }
 
@@ -52,10 +63,10 @@ class Music {
             });
 
             // 如果目前正在播放歌曲就加入隊列，反之則播放歌曲
-            if (this.isPlaying) {
+            if (this.isPlaying[guildID]) {
                 msg.channel.send(`歌曲加入隊列：${info.title}`);
             } else {
-                this.isPlaying = true;
+                this.isPlaying[guildID] = true;
                 this.playMusic(msg, guildID, this.queue[guildID][0]);
             }
 
@@ -87,7 +98,7 @@ class Music {
             if (self.queue[guildID].length > 0) {
                 self.playMusic(msg, guildID, self.queue[guildID].shift());
             } else {
-                self.isPlaying = false;
+                self.isPlaying[guildID] = false;
                 msg.channel.send('目前沒有音樂了，請加入音樂 :D');
             }
 
@@ -143,8 +154,24 @@ class Music {
 
     leave(msg) {
 
-        // 離開頻道
-        this.connection[msg.guild.id].disconnect();
+        // 如果機器人在頻道中
+        if (this.connection[msg.guild.id]) {
+
+            // 如果機器人有播放過歌曲
+            if (this.queue.hasOwnProperty(msg.guild.id)) {
+
+                // 清空播放列表
+                delete this.queue[msg.guild.id];
+
+                // 改變 isPlaying 狀態為 false
+                this.isPlaying[msg.guild.id] = false;
+            }
+
+            // 離開頻道
+            this.connection[msg.guild.id].disconnect();
+        } else {
+            msg.channel.send('機器人未加入任何頻道');
+        }
 
     }
 }
