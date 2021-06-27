@@ -155,7 +155,7 @@ class Music {
     leave(msg) {
 
         // 如果機器人在頻道中
-        if (this.connection[msg.guild.id]) {
+        if (this.connection[msg.guild.id] && this.connection[msg.guild.id].status === 0) {
 
             // 如果機器人有播放過歌曲
             if (this.queue.hasOwnProperty(msg.guild.id)) {
