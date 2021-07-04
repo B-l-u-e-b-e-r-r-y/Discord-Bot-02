@@ -8,9 +8,36 @@ const client = new Client();
 class Music {
 
     constructor() {
+        /**
+         * 下面的物件都是以 Discord guild id 當 key，例如：
+         * this.isPlaying = {
+         *     724145832802385970: false
+         * }
+         */
+
+        /**
+         * 機器人是否正在播放音樂
+         * this.isPlaying = {
+         *     724145832802385970: false
+         * }
+         */
         this.isPlaying = {};
+
+        /**
+         * 等待播放的音樂隊列，例如：
+         * this.queue = {
+         *     724145832802385970: [{
+         *         name: 'G.E.M.鄧紫棋【好想好想你 Missing You】Official Music Video',
+         *         url: 'https://www.youtube.com/watch?v=P6QXo88IG2c&ab_channel=GEM%E9%84%A7%E7%B4%AB%E6%A3%8B'
+         *     }]
+         * }
+         */
         this.queue = {};
+
+        // https://discord.js.org/#/docs/main/stable/class/VoiceConnection
         this.connection = {};
+
+        // https://discord.js.org/#/docs/main/stable/class/StreamDispatcher
         this.dispatcher = {};
     }
 
@@ -91,14 +118,13 @@ class Music {
         this.queue[guildID].shift();
 
         // 歌曲播放結束時的事件
-        const self = this;
         this.dispatcher[guildID].on('finish', () => {
 
             // 如果隊列中有歌曲
-            if (self.queue[guildID].length > 0) {
-                self.playMusic(msg, guildID, self.queue[guildID].shift());
+            if (this.queue[guildID].length > 0) {
+                this.playMusic(msg, guildID, this.queue[guildID][0]);
             } else {
-                self.isPlaying[guildID] = false;
+                this.isPlaying[guildID] = false;
                 msg.channel.send('目前沒有音樂了，請加入音樂 :D');
             }
 
